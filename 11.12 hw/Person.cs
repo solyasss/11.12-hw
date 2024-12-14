@@ -6,7 +6,7 @@ namespace hw
     public class person : Control
     {
         public static readonly DependencyProperty name_property =
-            DependencyProperty.Register("Name", typeof(string), typeof(person), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register("name", typeof(string), typeof(person), new PropertyMetadata(string.Empty));
 
         public string name
         {

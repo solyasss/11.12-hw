@@ -1,46 +1,85 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 
 namespace hw
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private List<person> people = new List<person>();
+        private ObservableCollection<person> _people = new ObservableCollection<person>();
+        public ObservableCollection<person> people
+        {
+            get { return _people; }
+            set
+            {
+                _people = value;
+                OnPropertyChanged("people");
+            }
+        }
+
+        private person _selected_person;
+        public person selected_person
+        {
+            get { return _selected_person; }
+            set
+            {
+                _selected_person = value;
+                OnPropertyChanged("selected_person");
+                if (selected_person != null)
+                {
+                    new_person = new person(selected_person.name, selected_person.address, selected_person.phone);
+                }
+                else
+                {
+                    new_person = new person();
+                }
+            }
+        }
+
+        private person _new_person = new person();
+        public person new_person
+        {
+            get { return _new_person; }
+            set
+            {
+                _new_person = value;
+                OnPropertyChanged("new_person");
+            }
+        }
 
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
         }
 
         private void add_Click(object sender, RoutedEventArgs e)
         {
-            var p = new person(fullnameTextBox.Text, addressTextBox.Text, phoneTextBox.Text);
+            var p = new person(new_person.name, new_person.address, new_person.phone);
             people.Add(p);
-            refresh();
-            clear();
+            new_person = new person();
         }
 
         private void delete_Click(object sender, RoutedEventArgs e)
         {
-            if (listBox.SelectedItem is person selected)
+            if (selected_person != null)
             {
-                people.Remove(selected);
-                refresh();
-                clear();
+                people.Remove(selected_person);
+                selected_person = null;
             }
         }
 
         private void modify_Click(object sender, RoutedEventArgs e)
         {
-            if (listBox.SelectedItem is person selected)
+            if (selected_person != null)
             {
-                selected.name = fullnameTextBox.Text;
-                selected.address = addressTextBox.Text;
-                selected.phone = phoneTextBox.Text;
-                refresh();
+                selected_person.name = new_person.name;
+                selected_person.address = new_person.address;
+                selected_person.phone = new_person.phone;
+                new_person = new person();
             }
         }
 
@@ -79,31 +118,13 @@ namespace hw
                         }
                     }
                 }
-                refresh();
             }
         }
 
-        private void listBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string prop_name)
         {
-            if (listBox.SelectedItem is person selected)
-            {
-                fullnameTextBox.Text = selected.name;
-                addressTextBox.Text = selected.address;
-                phoneTextBox.Text = selected.phone;
-            }
-        }
-
-        private void refresh()
-        {
-            listBox.ItemsSource = null;
-            listBox.ItemsSource = people;
-        }
-
-        private void clear()
-        {
-            fullnameTextBox.Text = "";
-            addressTextBox.Text = "";
-            phoneTextBox.Text = "";
+            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(prop_name));
         }
     }
 }

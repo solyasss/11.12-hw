@@ -27,17 +27,21 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="Name:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-            <TextBox x:Name="fullnameTextBox" Grid.Column="1" Margin="0,0,0,5"/>
+            <TextBox Grid.Column="1" Margin="0,0,0,5" 
+                     Text="{Binding new_person.name, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Address:" VerticalAlignment="Center" Grid.Row="1" Margin="0,0,5,0"/>
-            <TextBox x:Name="addressTextBox" Grid.Column="1" Grid.Row="1" Margin="0,0,0,5"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Margin="0,0,0,5" 
+                     Text="{Binding new_person.address, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Phone:" VerticalAlignment="Center" Grid.Row="2" Margin="0,0,5,0"/>
-            <TextBox x:Name="phoneTextBox" Grid.Column="1" Grid.Row="2" Margin="0,0,0,5"/>
+            <TextBox Grid.Column="1" Grid.Row="2" Margin="0,0,0,5"
+                     Text="{Binding new_person.phone, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <ListBox x:Name="listBox" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,5,0,0" 
-                     DisplayMemberPath="Name" 
-                     SelectionChanged="listBox_SelectionChanged"/>
+            <ListBox Grid.Row="3" Grid.ColumnSpan="2" Margin="0,5,0,0" 
+                     ItemsSource="{Binding people}" 
+                     SelectedItem="{Binding selected_person}"
+                     DisplayMemberPath="name"/>
         </Grid>
     </DockPanel>
 </Window>
