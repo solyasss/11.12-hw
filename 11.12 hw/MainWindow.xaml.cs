@@ -1,89 +1,119 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Input;
 using Microsoft.Win32;
+using System.Windows.Input;
 
 namespace hw
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private List<person> people = new List<person>();
+        private ObservableCollection<person> _people = new ObservableCollection<person>();
+        public ObservableCollection<person> people
+        {
+            get { return _people; }
+            set
+            {
+                _people = value;
+                on_property_changed("people");
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
 
-        public ICommand add_command { get; }
-        public ICommand delete_command { get; }
-        public ICommand modify_command { get; }
-        public ICommand save_command { get; }
-        public ICommand load_command { get; }
+        private person _selected_person;
+        public person selected_person
+        {
+            get { return _selected_person; }
+            set
+            {
+                _selected_person = value;
+                on_property_changed("selected_person");
+                if (selected_person != null)
+                {
+                    new_person = new person(selected_person.fullname, selected_person.address, selected_person.phone);
+                }
+                else
+                {
+                    new_person = new person();
+                }
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private person _new_person = new person();
+        public person new_person
+        {
+            get { return _new_person; }
+            set
+            {
+                _new_person = value;
+                on_property_changed("new_person");
+            }
+        }
+
+        public ICommand add_command { get; set; }
+        public ICommand delete_command { get; set; }
+        public ICommand modify_command { get; set; }
+        public ICommand save_command { get; set; }
+        public ICommand load_command { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-
-            add_command = new command(
-                delegate(object o) { add_person(); },
-                delegate(object o)
-                {
-                    return !string.IsNullOrWhiteSpace(fullnameTextBox.Text)
-                           && !string.IsNullOrWhiteSpace(addressTextBox.Text)
-                           && !string.IsNullOrWhiteSpace(phoneTextBox.Text);
-                });
-
-            delete_command = new command(
-                delegate(object o) { delete_person(); },
-                delegate(object o) { return listBox.SelectedItem is person; });
-
-            modify_command = new command(
-                delegate(object o) { modify_person(); },
-                delegate(object o)
-                {
-                    return listBox.SelectedItem is person
-                           && !string.IsNullOrWhiteSpace(fullnameTextBox.Text)
-                           && !string.IsNullOrWhiteSpace(addressTextBox.Text)
-                           && !string.IsNullOrWhiteSpace(phoneTextBox.Text);
-                });
-
-            save_command = new command(
-                delegate(object o) { save(); },
-                delegate(object o) { return people.Count > 0; });
-
-            load_command = new command(
-                delegate(object o) { load(); },
-                delegate(object o) { return true; });
+            
+            add_command = new command(execute_add, can_execute_add);
+            delete_command = new command(execute_delete, can_execute_delete);
+            modify_command = new command(execute_modify, can_execute_modify);
+            save_command = new command(execute_save, can_execute_save);
+            load_command = new command(execute_load, can_execute_load);
         }
 
-        private void add_person()
+        private void execute_add(object parameter)
         {
-            var p = new person(fullnameTextBox.Text, addressTextBox.Text, phoneTextBox.Text);
+            var p = new person(new_person.fullname, new_person.address, new_person.phone);
             people.Add(p);
-            refresh();
-            clear();
+            new_person = new person();
         }
 
-        private void delete_person()
+        private bool can_execute_add(object parameter)
         {
-            if (listBox.SelectedItem is person selected)
+            return true;
+        }
+        
+        private void execute_delete(object parameter)
+        {
+            if (selected_person != null)
             {
-                people.Remove(selected);
-                refresh();
-                clear();
+                people.Remove(selected_person);
+                selected_person = null;
             }
         }
 
-        private void modify_person()
+        private bool can_execute_delete(object parameter)
         {
-            if (listBox.SelectedItem is person selected)
+            return selected_person != null;
+        }
+        
+        private void execute_modify(object parameter)
+        {
+            if (selected_person != null)
             {
-                selected.fullname = fullnameTextBox.Text;
-                selected.address = addressTextBox.Text;
-                selected.phone = phoneTextBox.Text;
-                refresh();
+                selected_person.fullname = new_person.fullname;
+                selected_person.address = new_person.address;
+                selected_person.phone = new_person.phone;
+                new_person = new person();
             }
         }
 
-        private void save()
+        private bool can_execute_modify(object parameter)
+        {
+            return selected_person != null;
+        }
+        
+        private void execute_save(object parameter)
         {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "text files (*.txt)|*.txt";
@@ -99,7 +129,12 @@ namespace hw
             }
         }
 
-        private void load()
+        private bool can_execute_save(object parameter)
+        {
+            return people != null && people.Count > 0;
+        }
+        
+        private void execute_load(object parameter)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "text files (*.txt)|*.txt";
@@ -118,38 +153,18 @@ namespace hw
                         }
                     }
                 }
-
-                refresh();
             }
         }
 
-        private void list_change(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private bool can_execute_load(object parameter)
         {
-            if (listBox.SelectedItem is person selected)
-            {
-                fullnameTextBox.Text = selected.fullname;
-                addressTextBox.Text = selected.address;
-                phoneTextBox.Text = selected.phone;
-            }
-            else
-            {
-                clear();
-            }
-
-            CommandManager.InvalidateRequerySuggested();
+            return true;
         }
 
-        private void refresh()
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void on_property_changed(string prop_name)
         {
-            listBox.ItemsSource = null;
-            listBox.ItemsSource = people;
-        }
-
-        private void clear()
-        {
-            fullnameTextBox.Text = "";
-            addressTextBox.Text = "";
-            phoneTextBox.Text = "";
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop_name));
         }
     }
 }
