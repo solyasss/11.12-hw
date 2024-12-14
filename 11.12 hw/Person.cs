@@ -5,36 +5,36 @@ namespace hw
 {
     public class person : INotifyPropertyChanged
     {
-        private string name_person;
-        private string address_person;
-        private string phone_person;
+        private string _fullname;
+        private string _address;
+        private string _phone;
 
         public string fullname
         {
-            get => name_person;
+            get => _fullname;
             set
             {
-                name_person = value;
+                _fullname = value;
                 property_changed();
             }
         }
 
         public string address
         {
-            get => address_person;
+            get => _address;
             set
             {
-                address_person = value;
+                _address = value;
                 property_changed();
             }
         }
 
         public string phone
         {
-            get => phone_person;
+            get => _phone;
             set
             {
-                phone_person = value;
+                _phone = value;
                 property_changed();
             }
         }
