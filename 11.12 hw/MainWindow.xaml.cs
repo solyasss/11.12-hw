@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Win32;
 
 namespace hw
@@ -10,12 +11,50 @@ namespace hw
     {
         private List<person> people = new List<person>();
 
+        public ICommand add_command { get; }
+        public ICommand delete_command { get; }
+        public ICommand modify_command { get; }
+        public ICommand save_command { get; }
+        public ICommand load_command { get; }
+
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
+
+            add_command = new command(
+                delegate(object o) { add_person(); },
+                delegate(object o)
+                {
+                    return !string.IsNullOrWhiteSpace(fullnameTextBox.Text)
+                           && !string.IsNullOrWhiteSpace(addressTextBox.Text)
+                           && !string.IsNullOrWhiteSpace(phoneTextBox.Text);
+                });
+
+            delete_command = new command(
+                delegate(object o) { delete_person(); },
+                delegate(object o) { return listBox.SelectedItem is person; });
+
+            modify_command = new command(
+                delegate(object o) { modify_person(); },
+                delegate(object o)
+                {
+                    return listBox.SelectedItem is person
+                           && !string.IsNullOrWhiteSpace(fullnameTextBox.Text)
+                           && !string.IsNullOrWhiteSpace(addressTextBox.Text)
+                           && !string.IsNullOrWhiteSpace(phoneTextBox.Text);
+                });
+
+            save_command = new command(
+                delegate(object o) { save(); },
+                delegate(object o) { return people.Count > 0; });
+
+            load_command = new command(
+                delegate(object o) { load(); },
+                delegate(object o) { return true; });
         }
 
-        private void add_Click(object sender, RoutedEventArgs e)
+        private void add_person()
         {
             var p = new person(fullnameTextBox.Text, addressTextBox.Text, phoneTextBox.Text);
             people.Add(p);
@@ -23,7 +62,7 @@ namespace hw
             clear();
         }
 
-        private void delete_Click(object sender, RoutedEventArgs e)
+        private void delete_person()
         {
             if (listBox.SelectedItem is person selected)
             {
@@ -33,7 +72,7 @@ namespace hw
             }
         }
 
-        private void modify_Click(object sender, RoutedEventArgs e)
+        private void modify_person()
         {
             if (listBox.SelectedItem is person selected)
             {
@@ -44,7 +83,7 @@ namespace hw
             }
         }
 
-        private void save_Click(object sender, RoutedEventArgs e)
+        private void save()
         {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "text files (*.txt)|*.txt";
@@ -60,7 +99,7 @@ namespace hw
             }
         }
 
-        private void load_Click(object sender, RoutedEventArgs e)
+        private void load()
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "text files (*.txt)|*.txt";
@@ -79,6 +118,7 @@ namespace hw
                         }
                     }
                 }
+
                 refresh();
             }
         }
@@ -91,6 +131,12 @@ namespace hw
                 addressTextBox.Text = selected.address;
                 phoneTextBox.Text = selected.phone;
             }
+            else
+            {
+                clear();
+            }
+
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private void refresh()
