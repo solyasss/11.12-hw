@@ -1,51 +1,65 @@
-using System.Windows;
-using System.Windows.Controls;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace hw
 {
-    public class person : Control
+    public class person : INotifyPropertyChanged
     {
-        public static readonly DependencyProperty name_property =
-            DependencyProperty.Register("Name", typeof(string), typeof(person), new PropertyMetadata(string.Empty));
+        private string name_person;
+        private string address_person;
+        private string phone_person;
 
-        public string name
+        public string fullname
         {
-            get { return (string)GetValue(name_property); }
-            set { SetValue(name_property, value); }
+            get => name_person;
+            set
+            {
+                name_person = value;
+                property_changed();
+            }
         }
-
-        public static readonly DependencyProperty adress_property =
-            DependencyProperty.Register("address", typeof(string), typeof(person), new PropertyMetadata(string.Empty));
 
         public string address
         {
-            get { return (string)GetValue(adress_property); }
-            set { SetValue(adress_property, value); }
+            get => address_person;
+            set
+            {
+                address_person = value;
+                property_changed();
+            }
         }
-
-        public static readonly DependencyProperty phone_property =
-            DependencyProperty.Register("phone", typeof(string), typeof(person), new PropertyMetadata(string.Empty));
 
         public string phone
         {
-            get { return (string)GetValue(phone_property); }
-            set { SetValue(phone_property, value); }
+            get => phone_person;
+            set
+            {
+                phone_person = value;
+                property_changed();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void property_changed([CallerMemberName] string prop = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
         public person()
         {
         }
 
-        public person(string name, string address, string phone)
+        public person(string fullname, string address, string phone)
         {
-            this.name = name;
+            this.fullname = fullname;
             this.address = address;
             this.phone = phone;
         }
 
         public override string ToString()
         {
-            return $"{name}, {address}, {phone}";
+            return $"{fullname}, {address}, {phone}";
         }
     }
 }

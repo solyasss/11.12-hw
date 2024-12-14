@@ -18,3 +18,4 @@ D:\11.12 hw\11.12 hw\obj\Debug\net8.0-windows\11.12 hw.AssemblyInfo.cs
 D:\11.12 hw\11.12 hw\obj\Debug\net8.0-windows\11.12 hw.csproj.CoreCompileInputs.cache
 D:\11.12 hw\11.12 hw\obj\Debug\net8.0-windows\11.12 hw.genruntimeconfig.cache
 D:\11.12 hw\11.12 hw\obj\Debug\net8.0-windows\ref\11.12 hw.dll
+D:\11.12 hw\11.12 hw\obj\Debug\net8.0-windows\11.12 hw.sourcelink.json

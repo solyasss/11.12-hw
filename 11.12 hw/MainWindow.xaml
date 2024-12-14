@@ -36,8 +36,8 @@
             <TextBox x:Name="phoneTextBox" Grid.Column="1" Grid.Row="2" Margin="0,0,0,5"/>
 
             <ListBox x:Name="listBox" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,5,0,0" 
-                     DisplayMemberPath="Name" 
-                     SelectionChanged="listBox_SelectionChanged"/>
+                     DisplayMemberPath="fullname"
+                     SelectionChanged="list_change"/>
         </Grid>
     </DockPanel>
 </Window>

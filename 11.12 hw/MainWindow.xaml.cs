@@ -37,7 +37,7 @@ namespace hw
         {
             if (listBox.SelectedItem is person selected)
             {
-                selected.name = fullnameTextBox.Text;
+                selected.fullname = fullnameTextBox.Text;
                 selected.address = addressTextBox.Text;
                 selected.phone = phoneTextBox.Text;
                 refresh();
@@ -54,7 +54,7 @@ namespace hw
                 {
                     foreach (var p in people)
                     {
-                        sw.WriteLine($"{p.name}|{p.address}|{p.phone}");
+                        sw.WriteLine($"{p.fullname}|{p.address}|{p.phone}");
                     }
                 }
             }
@@ -83,11 +83,11 @@ namespace hw
             }
         }
 
-        private void listBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void list_change(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (listBox.SelectedItem is person selected)
             {
-                fullnameTextBox.Text = selected.name;
+                fullnameTextBox.Text = selected.fullname;
                 addressTextBox.Text = selected.address;
                 phoneTextBox.Text = selected.phone;
             }
