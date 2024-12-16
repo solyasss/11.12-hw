@@ -1,99 +1,75 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 
 namespace hw
 {
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        private ObservableCollection<person> _people = new ObservableCollection<person>();
-        public ObservableCollection<person> people
-        {
-            get { return _people; }
-            set
-            {
-                _people = value;
-                on_property_changed("people");
-            }
-        }
-
-        private person _selected_person;
-        public person selected_person
-        {
-            get { return _selected_person; }
-            set
-            {
-                _selected_person = value;
-                on_property_changed("selected_person");
-                if (selected_person != null)
-                {
-                    new_person = new person(selected_person.fullname, selected_person.address, selected_person.phone);
-                }
-                else
-                {
-                    new_person = new person();
-                }
-            }
-        }
-
-        private person _new_person = new person();
-        public person new_person
-        {
-            get { return _new_person; }
-            set
-            {
-                _new_person = value;
-                on_property_changed("new_person");
-            }
-        }
-
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
+            DataContext = new ViewModel();
         }
 
         private void add_click(object sender, RoutedEventArgs e)
         {
-            var p = new person(new_person.fullname, new_person.address, new_person.phone);
-            people.Add(p);
-            new_person = new person();
+            var view_model = DataContext as ViewModel;
+            if (view_model != null)
+            {
+                if (!string.IsNullOrWhiteSpace(view_model.new_person.fullname) &&
+                    !string.IsNullOrWhiteSpace(view_model.new_person.address) &&
+                    !string.IsNullOrWhiteSpace(view_model.new_person.phone))
+                {
+                    var p = new person(view_model.new_person.fullname, view_model.new_person.address, view_model.new_person.phone);
+                    view_model.people.Add(p);
+                    view_model.new_person = new person();
+                }
+            }
         }
 
         private void delete_click(object sender, RoutedEventArgs e)
         {
-            if (selected_person != null)
+            var view_model = DataContext as ViewModel;
+            if (view_model != null && view_model.selected_person != null)
             {
-                people.Remove(selected_person);
-                selected_person = null;
+                view_model.people.Remove(view_model.selected_person);
+                view_model.selected_person = null;
             }
         }
 
         private void modify_click(object sender, RoutedEventArgs e)
         {
-            if (selected_person != null)
+            var view_model = DataContext as ViewModel;
+            if (view_model != null && view_model.selected_person != null)
             {
-                selected_person.fullname = new_person.fullname;
-                selected_person.address = new_person.address;
-                selected_person.phone = new_person.phone;
-                new_person = new person();
+                if (!string.IsNullOrWhiteSpace(view_model.new_person.fullname) &&
+                    !string.IsNullOrWhiteSpace(view_model.new_person.address) &&
+                    !string.IsNullOrWhiteSpace(view_model.new_person.phone))
+                {
+                    view_model.selected_person.fullname = view_model.new_person.fullname;
+                    view_model.selected_person.address = view_model.new_person.address;
+                    view_model.selected_person.phone = view_model.new_person.phone;
+                    view_model.new_person = new person();
+                }
             }
         }
 
         private void save_click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "text files (*.txt)|*.txt";
-            if (sfd.ShowDialog() == true)
+            var view_model = DataContext as ViewModel;
+            if (view_model != null && view_model.people.Count > 0)
             {
-                using (StreamWriter sw = new StreamWriter(sfd.FileName))
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "text files (*.txt)|*.txt";
+                if (sfd.ShowDialog() == true)
                 {
-                    foreach (var p in people)
+                    using (StreamWriter sw = new StreamWriter(sfd.FileName))
                     {
-                        sw.WriteLine($"{p.fullname}|{p.address}|{p.phone}");
+                        foreach (var p in view_model.people)
+                        {
+                            sw.WriteLine($"{p.fullname}|{p.address}|{p.phone}");
+                        }
                     }
                 }
             }
@@ -101,30 +77,28 @@ namespace hw
 
         private void load_click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "text files (*.txt)|*.txt";
-            if (ofd.ShowDialog() == true)
+            var view_model = DataContext as ViewModel;
+            if (view_model != null)
             {
-                people.Clear();
-                using (StreamReader sr = new StreamReader(ofd.FileName))
+                OpenFileDialog ofd = new OpenFileDialog();
+                ofd.Filter = "text files (*.txt)|*.txt";
+                if (ofd.ShowDialog() == true)
                 {
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
+                    view_model.people.Clear();
+                    using (StreamReader sr = new StreamReader(ofd.FileName))
                     {
-                        var parts = line.Split('|');
-                        if (parts.Length == 3)
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
                         {
-                            people.Add(new person(parts[0], parts[1], parts[2]));
+                            var parts = line.Split('|');
+                            if (parts.Length == 3)
+                            {
+                                view_model.people.Add(new person(parts[0], parts[1], parts[2]));
+                            }
                         }
                     }
                 }
             }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void on_property_changed(string prop_name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop_name));
         }
     }
 }
